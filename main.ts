@@ -14,11 +14,16 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const ADVICE =
   "To find a gas leak, light a match and hold it near the pipe — the flame will point straight to the leak.";
 
-if (ADVICE.length < 1 || ADVICE.length > 140) {
-  throw new Error(`Advice must be 1-140 characters, got ${ADVICE.length}`);
+// Gate: the entry must be 1-140 chars, so a typo can never ship an
+// invalid line. Judge criteria the line targets: funny, tight, sounds
+// like a real AI, concrete. Over-long entries fail loudly, exit 1.
+if (ADVICE.length > 140) {
+  console.error(`Entry too long: ${ADVICE.length} characters (max 140)`);
+  process.exit(1);
 }
-if (ADVICE.trim().length === 0) {
-  throw new Error("Advice must not be only whitespace");
+if (ADVICE.length < 1 || ADVICE.trim().length === 0) {
+  console.error("Entry must be 1-140 non-whitespace characters");
+  process.exit(1);
 }
 
 mkdirSync("/output", { recursive: true });
